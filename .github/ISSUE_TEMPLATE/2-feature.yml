@@ -1,0 +1,46 @@
+name: 機能の要望
+description: 新しい機能や、今の機能の改善を提案します
+title: "[Feature] "
+labels: ["feature"]
+type: Feature
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 困っていること・やりたいこと
+      description: なぜ欲しいのかを書いておくと、あとで方法を選びやすくなります
+      placeholder: 例）一覧が増えてきて、目的のデータを探しにくい
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: こうなってほしい
+      placeholder: |
+        - 一覧にキーワード検索を付ける
+        - 登録日で並べ替えられるようにする
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: 関係する画面・機能
+      placeholder: 例）一覧画面、管理画面
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      options:
+        - 高い（すぐに必要）
+        - ふつう
+        - 低い（いつかでよい）
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: ほかに考えた方法
+      description: あれば記入してください
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足・参考
+      description: 画像、参考になるサービス、関連する Issue（#番号）など

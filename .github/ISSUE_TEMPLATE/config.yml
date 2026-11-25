@@ -1,0 +1,7 @@
+# 白紙の Issue も作れるようにしておく（テンプレートに当てはまらないメモ用）
+blank_issues_enabled: true
+# 利用者向けのお問い合わせ窓口がある場合は、ここに案内を追加する（例）
+# contact_links:
+#   - name: 使い方の質問・お問い合わせ
+#     url: https://example.com/contact
+#     about: サービスについての質問は、お問い合わせ窓口までどうぞ

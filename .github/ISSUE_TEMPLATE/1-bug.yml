@@ -1,0 +1,60 @@
+name: 不具合の報告
+description: 動かない・表示がおかしいなど、不具合を報告します
+title: "[Bug] "
+labels: ["bug"]
+type: Bug
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: どこで起きましたか
+      options:
+        - Web（PC）
+        - Web（スマートフォン）
+        - iOS アプリ
+        - Android アプリ
+        - その他
+        - わからない
+      # 確認せずに送られても誤った値にならないよう、「わからない」を最初の表示にする（並び順はそのまま）
+      default: 5
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: どの画面・機能ですか
+      description: わかる範囲で
+      placeholder: 例）ログイン画面、設定 → プロフィール
+  - type: textarea
+    id: what
+    attributes:
+      label: 何が起きましたか
+      description: 見えたことをそのまま書いてください
+      placeholder: 例）保存ボタンを押しても、一覧に反映されない
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: どうすると起きますか
+      description: わかる範囲で大丈夫です
+      placeholder: |
+        1. 〇〇の画面を開く
+        2. 〇〇を入力する
+        3. 保存する
+  - type: textarea
+    id: expected
+    attributes:
+      label: 本当はどうなってほしいですか
+      placeholder: 例）保存した内容が一覧のいちばん下に出る
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: スクリーンショット・エラー表示
+      description: 画像はここに貼り付けられます。エラーメッセージもここに貼ってください
+  - type: input
+    id: version
+    attributes:
+      label: 端末・バージョン
+      description: わかれば記入してください
+      placeholder: 例）iPhone 15 / iOS 19.1、Windows / Chrome 140
