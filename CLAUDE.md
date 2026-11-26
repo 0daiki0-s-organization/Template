@@ -43,7 +43,7 @@ PR を作ったら、毎回ラベルとマイルストーンを付ける（`mcp_
   - リファクタリング → `refactor`、テスト → `test`、開発環境・パッケージ → `setup`
   - Dependabot の PR は、`dependencies`・`javascript` に加えて `setup` を付ける
 - **マイルストーン**: プロジェクトごとに決めて、ここに番号と意味を書く（例: 「保守・運用」に日々の改善・修正をまとめる）
-- **プロジェクト**: GitHub Projects の列は自動で動くので、Claude が操作する必要はない（README の「GitHub Projects で進み具合を管理する」）
+- **プロジェクト**: GitHub Projects の列は自動で動くので、Claude が操作する必要はない（作り方は README の「8. GitHub Projects を作る」）
   - 未着手: 開いた Issue と PR が自動で入る
   - 作業中: 手で移す
   - 承認待ち: PR をマージすると移る

@@ -6,7 +6,7 @@ name: Deploy to Production
 #   3. deploy:  承認されたら本番に出す（deploy.sh を用意して使う）
 #   4. tag:     承認したコミットにタグ release-<番号> を付ける（本番に出した版の記録）
 #   5. project: GitHub Projects の「承認待ち」にある PR のうち、今回出したものを「本番反映済み」に移す
-# 詳しい設定の手順は README の「本番の前に承認を待つ」「GitHub Projects で進み具合を管理する」を参照
+# 詳しい設定の手順は README の「新しいリポジトリを作ったら行う設定」を参照
 on:
   push:
     branches: [ "main" ]
