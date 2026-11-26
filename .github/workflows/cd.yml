@@ -1,21 +1,104 @@
 name: Deploy to Production
-permissions:
-  contents: read
-  pull-requests: write
 
-# トリガー：mainブランチへのPush時のみ実行
+# main にマージしたら、本番に出す前に利用者の承認を待つ。
+#   1. notify:  マージした PR に、承認・却下の画面のリンクをコメントする
+#   2. approve: Environment「production」の承認を待つ（承認者は Settings → Environments → production で設定する）
+#   3. deploy:  承認されたら本番に出す（deploy.sh を用意して使う）
+#   4. tag:     承認したコミットにタグ release-<番号> を付ける（本番に出した版の記録）
+#   5. project: GitHub Projects の「承認待ち」にある PR のうち、今回出したものを「本番反映済み」に移す
+# 詳しい設定の手順は README の「本番の前に承認を待つ」「GitHub Projects で進み具合を管理する」を参照
 on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # マージした PR に承認・却下のリンクを書き込む（通知からそのまま開けるように）
+      - name: Comment approval link on the merged PR
+        run: |
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "このコミットに対応する PR が見つからないので、コメントはしない"
+            exit 0
+          fi
+          gh pr comment "$pr" --repo "$GITHUB_REPOSITORY" --body "$(cat <<BODY
+          main にマージされました。承認するまで本番には反映されません。
+
+          - 承認・却下: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+            - 「Review deployments」→「production」→「Approve and deploy」または「Reject」
+          BODY
+          )"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  approve:
+    runs-on: ubuntu-latest
+    needs: notify
+    # Environment「production」に承認者を設定しておくと、ここで承認を待つ
+    environment: production
+    steps:
+      - run: echo "本番への反映が承認されました"
+
   deploy:
     runs-on: ubuntu-latest
+    needs: approve
     steps:
       - uses: actions/checkout@v4
       - name: Deploy
-        run: ./deploy.sh
+        run: |
+          if [ ! -x ./deploy.sh ]; then
+            echo "::warning::deploy.sh がないので、本番への反映は行わない（プロジェクトに合わせて用意する）"
+            exit 0
+          fi
+          ./deploy.sh
         env:
-          # 秘密鍵などはコードに直接書かず、Secretsから読み込む
+          # 秘密鍵などはコードに直接書かず、Secrets から読み込む
           API_KEY: ${{ secrets.PROD_API_KEY }}
 
+  tag:
+    runs-on: ubuntu-latest
+    needs: deploy
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      # 本番に出した版の記録。ブランチ名ではなくこのタグを指定すれば、承認した版そのものを取り出せる
+      - name: Tag the approved commit
+        run: |
+          tag="release-${{ github.run_number }}"
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "$tag"
+
+  project:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 「今回出したコミットに含まれる PR か」を調べるため、履歴をすべて取る
+          fetch-depth: 0
+
+      - name: Move released PRs to 本番反映済み
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::PROJECT_TOKEN secret is not set. プロジェクトの列は移さない"
+            exit 0
+          fi
+          .github/scripts/move-released-to-done.sh
+        env:
+          # プロジェクトを読み書きできるトークン（権限は project だけ）
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          RELEASED_SHA: ${{ github.sha }}
+          # プロジェクトの持ち主と名前。Settings → Secrets and variables → Actions → Variables の
+          # PROJECT_OWNER・PROJECT_TITLE で変えられる（既定はリポジトリの持ち主とリポジトリ名）
+          PROJECT_OWNER: ${{ vars.PROJECT_OWNER || github.repository_owner }}
+          PROJECT_TITLE: ${{ vars.PROJECT_TITLE || github.event.repository.name }}
+          REPOSITORY: ${{ github.repository }}
